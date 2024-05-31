@@ -1,95 +1,5 @@
-<script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
-
-interface Category {
-  id: number
-  name: string
-}
-
-// State untuk kategori
-const categories = ref<Category[]>([])
-const showModal = ref(false)
-const editingCategory = ref<Category | null>(null)
-const form = reactive({
-  id: null as number | null,
-  name: '',
-})
-
-// Fungsi untuk mengambil data kategori dari local storage
-const fetchCategories = () => {
-  const storedCategories = localStorage.getItem('categories')
-  if (storedCategories) {
-    categories.value = JSON.parse(storedCategories)
-  }
-}
-
-// Fungsi untuk menyimpan data kategori ke local storage
-const saveCategories = () => {
-  localStorage.setItem('categories', JSON.stringify(categories.value))
-}
-
-// Mengambil data kategori dari local storage saat komponen dimount
-onMounted(fetchCategories)
-
-// Fungsi untuk menambah/mengedit kategori
-const saveCategory = () => {
-  if (editingCategory.value) {
-    // Update kategori
-    const index = categories.value.findIndex(cat => cat.id === form.id)
-    if (index !== -1) {
-      categories.value[index].name = form.name
-    }
-  } else {
-    // Tambah kategori baru
-    const newCategory: Category = {
-      id: Date.now(),
-      name: form.name,
-    }
-    categories.value.push(newCategory)
-  }
-
-  // Simpan ke local storage dan reset form
-  saveCategories()
-  resetForm()
-  showModal.value = false
-}
-
-// Fungsi untuk mengedit kategori
-const editCategory = (category: Category) => {
-  editingCategory.value = category
-  form.id = category.id
-  form.name = category.name
-  showModal.value = true
-}
-
-// Fungsi untuk menghapus kategori
-const deleteCategory = (id: number) => {
-  categories.value = categories.value.filter(category => category.id !== id)
-  saveCategories()
-}
-
-// Fungsi untuk mereset form
-const resetForm = () => {
-  editingCategory.value = null
-  form.id = null
-  form.name = ''
-}
-</script>
-
 <template>
-  <div class="container mx-auto px-4 py-8">
-    <nav class="bg-gradient-to-r from-blue-500 to-indigo-600 p-6 rounded-lg shadow-lg flex justify-between items-center mb-8">
-      <div>
-        <h1 class="text-5xl text-white font-extrabold">myMoneii</h1>
-        <p class="text-white text-lg font-light italic">Save More for A Better Future</p>
-      </div>
-      <div class="flex items-center space-x-4">
-        <NuxtLink to="/" class="text-white hover:text-gray-300 text-lg transition duration-300">Dashboard</NuxtLink>
-        <NuxtLink to="/transactions" class="text-white hover:text-gray-300 text-lg transition duration-300">Transaksi</NuxtLink>
-        <NuxtLink to="/categories" class="text-white hover:text-gray-300 text-lg transition duration-300">Kategori</NuxtLink>
-      </div>
-    </nav>
-    <div class="container mx-auto p-4">
+  <div class="container mx-auto p-4">
     <h1 class="text-2xl font-bold mb-4">Daftar Kategori</h1>
     <div class="mb-4">
       <button
@@ -183,5 +93,75 @@ const resetForm = () => {
       </div>
     </div>
   </div>
-  </div>
 </template>
+
+<script setup lang="ts">
+import { ref, reactive, onMounted } from 'vue'
+
+interface Category {
+  id: number
+  name: string
+}
+
+// State untuk kategori
+const categories = ref<Category[]>([])
+const showModal = ref(false)
+const editingCategory = ref<Category | null>(null)
+const form = reactive({
+  id: null as number | null,
+  name: '',
+})
+
+// Data kategori sementara, ganti dengan API atau sumber data lainnya
+const fetchCategories = async () => {
+  // Simulasi data
+  categories.value = [
+    { id: 1, name: 'Makan' },
+    { id: 2, name: 'Belanja' },
+  ]
+}
+
+// Mengambil data kategori saat komponen dimuat
+onMounted(fetchCategories)
+
+// Fungsi untuk menambah/mengedit kategori
+const saveCategory = async () => {
+  if (editingCategory.value) {
+    // Update kategori
+    const category = categories.value.find(c => c.id === form.id)
+    if (category) {
+      category.name = form.name
+    }
+  } else {
+    // Tambah kategori baru
+    categories.value.push({
+      id: Date.now(),
+      name: form.name,
+    })
+  }
+
+  // Reset form dan tutup modal
+  resetForm()
+  showModal.value = false
+}
+
+// Fungsi untuk mengedit kategori
+const editCategory = (category: Category) => {
+  editingCategory.value = category
+  form.id = category.id
+  form.name = category.name
+  showModal.value = true
+}
+
+// Fungsi untuk menghapus kategori
+const deleteCategory = (id: number) => {
+  categories.value = categories.value.filter(category => category.id !== id)
+}
+
+// Fungsi untuk mereset form
+const resetForm = () => {
+  editingCategory.value = null
+  form.id = null
+  form.name = ''
+}
+</script>

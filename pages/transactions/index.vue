@@ -1,138 +1,3 @@
-<script setup lang="ts">
-import { createClient } from '@supabase/supabase-js'
-import { ref, reactive, onMounted } from 'vue'
-import { parseISO, format } from 'date-fns'
-
-interface Category {
-  id: number;
-  name: string;
-}
-
-interface Transaction {
-  id: number;
-  date: string;
-  description: string;
-  category: Category;
-  amount: number;
-}
-
-// Supabase sementara, jangan lupa pindah ke file env
-const supabase = createClient('https://vchyvlqxpntytsnpqzli.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjaHl2bHF4cG50eXRzbnBxemxpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTY3ODEwMTUsImV4cCI6MjAzMjM1NzAxNX0.rXzpPTWkPH2sPbAukMsMXWt5lXGkvBR1WfAd2sC-3j8')
-
-// State untuk transaksi
-const transactions = ref<Transaction[]>([])
-const showModal = ref(false)
-const editingTransaction = ref<Transaction | null>(null)
-const form = reactive({
-  id: null as number | null,
-  date: '',
-  description: '',
-  categoryId: null as number | null,
-  amount: 0,
-})
-
-// State untuk kategori
-const categories = ref<Category[]>([])
-
-// Mengambil data transaksi dan kategori dari Supabase
-onMounted(async () => {
-  const { data: transactionsData } = await supabase.from('transactions').select('*, category(*)')
-  if (transactionsData) transactions.value = transactionsData as Transaction[]
-
-  const { data: categoriesData } = await supabase.from('categories').select('*')
-  if (categoriesData) categories.value = categoriesData as Category[]
-})
-
-// Fungsi untuk format tanggal
-const formatDate = (dateString: string) => {
-  if (!dateString) return ''
-  const date = parseISO(dateString)
-  return format(date, 'dd/MM/yyyy')
-}
-
-// Fungsi untuk format mata uang
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(amount)
-}
-
-// Fungsi untuk menambah/mengedit transaksi
-const saveTransaction = async () => {
-  try {
-    if (editingTransaction.value) {
-      // Update transaksi
-      await supabase
-        .from('transactions')
-        .update({
-          date: form.date,
-          description: form.description,
-          category_id: form.categoryId,
-          amount: form.amount,
-        })
-        .eq('id', form.id)
-    } else {
-      // Tambah transaksi baru
-      const { data, error } = await supabase
-        .from('transactions')
-        .insert([
-          {
-            date: form.date,
-            description: form.description,
-            category_id: form.categoryId,
-            amount: form.amount,
-          },
-        ])
-
-      if (error) console.error(error)
-    }
-
-    // Reset form dan tutup modal
-    resetForm()
-    showModal.value = false
-
-    // Mengambil data transaksi terbaru
-    const { data: transactionsData } = await supabase.from('transactions').select('*, category(*)')
-    if (transactionsData) transactions.value = transactionsData as Transaction[]
-  } catch (error) {
-    console.error(error)
-  }
-}
-
-// Fungsi untuk mengedit transaksi
-const editTransaction = (transaction: Transaction) => {
-  editingTransaction.value = transaction
-  form.id = transaction.id
-  form.date = transaction.date
-  form.description = transaction.description
-  form.categoryId = transaction.category.id
-  form.amount = transaction.amount
-  showModal.value = true
-}
-
-// Fungsi untuk menghapus transaksi
-const deleteTransaction = async (id: number) => {
-  try {
-    await supabase.from('transactions').delete().eq('id', id)
-
-    // Mengambil data transaksi terbaru
-    const { data: transactionsData } = await supabase.from('transactions').select('*, category(*)')
-    if (transactionsData) transactions.value = transactionsData as Transaction[]
-  } catch (error) {
-    console.error(error)
-  }
-}
-
-// Fungsi untuk mereset form
-const resetForm = () => {
-  editingTransaction.value = null
-  form.id = null
-  form.date = ''
-  form.description = ''
-  form.categoryId = null
-  form.amount = 0
-}
-</script>
-
-
 <template>
   <div class="container mx-auto p-4">
     <h1 class="text-2xl font-bold mb-4">Daftar Transaksi</h1>
@@ -277,4 +142,129 @@ const resetForm = () => {
   </div>
 </template>
 
-<style></style>
+<script setup lang="ts">
+import { ref, reactive, onMounted } from 'vue'
+import { parseISO, format } from 'date-fns'
+
+interface Category {
+  id: number
+  name: string
+}
+
+interface Transaction {
+  id: number
+  date: string
+  description: string
+  category: Category
+  amount: number
+}
+
+// State untuk transaksi
+const transactions = ref<Transaction[]>([])
+const showModal = ref(false)
+const editingTransaction = ref<Transaction | null>(null)
+const form = reactive({
+  id: null as number | null,
+  date: '',
+  description: '',
+  categoryId: null as number | null,
+  amount: 0,
+})
+
+// State untuk kategori
+const categories = ref<Category[]>([])
+
+// Data transaksi dan kategori sementara, ganti dengan API atau sumber data lainnya
+const fetchTransactions = async () => {
+  // Simulasi data
+  transactions.value = [
+    {
+      id: 1,
+      date: '2024-05-30',
+      description: 'Transaksi 1',
+      category: { id: 1, name: 'Kategori 1' },
+      amount: 100000,
+    },
+    {
+      id: 2,
+      date: '2024-05-29',
+      description: 'Transaksi 2',
+      category: { id: 2, name: 'Kategori 2' },
+      amount: -50000,
+    },
+  ]
+
+  categories.value = [
+    { id: 1, name: 'Kategori 1' },
+    { id: 2, name: 'Kategori 2' },
+  ]
+}
+
+// Mengambil data transaksi dan kategori saat komponen dimuat
+onMounted(fetchTransactions)
+
+// Fungsi untuk format tanggal
+const formatDate = (dateString: string) => {
+  if (!dateString) return ''
+  const date = parseISO(dateString)
+  return format(date, 'dd/MM/yyyy')
+}
+
+// Fungsi untuk format mata uang
+const formatCurrency = (amount: number) => {
+  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(amount)
+}
+
+// Fungsi untuk menambah/mengedit transaksi
+const saveTransaction = () => {
+  if (editingTransaction.value) {
+    // Update transaksi
+    const transaction = transactions.value.find(t => t.id === form.id)
+    if (transaction) {
+      transaction.date = form.date
+      transaction.description = form.description
+      transaction.category = categories.value.find(c => c.id === form.categoryId) || transaction.category
+      transaction.amount = form.amount
+    }
+  } else {
+    // Tambah transaksi baru
+    transactions.value.push({
+      id: Date.now(),
+      date: form.date,
+      description: form.description,
+      category: categories.value.find(c => c.id === form.categoryId) || { id: 0, name: '' },
+      amount: form.amount,
+    })
+  }
+
+  // Reset form dan tutup modal
+  resetForm()
+  showModal.value = false
+}
+
+// Fungsi untuk mengedit transaksi
+const editTransaction = (transaction: Transaction) => {
+  editingTransaction.value = transaction
+  form.id = transaction.id
+  form.date = transaction.date
+  form.description = transaction.description
+  form.categoryId = transaction.category.id
+  form.amount = transaction.amount
+  showModal.value = true
+}
+
+// Fungsi untuk menghapus transaksi
+const deleteTransaction = (id: number) => {
+  transactions.value = transactions.value.filter(transaction => transaction.id !== id)
+}
+
+// Fungsi untuk mereset form
+const resetForm = () => {
+  editingTransaction.value = null
+  form.id = null
+  form.date = ''
+  form.description = ''
+  form.categoryId = null
+  form.amount = 0
+}
+</script>
