@@ -1,5 +1,95 @@
+<script setup lang="ts">
+import { ref, reactive, onMounted } from 'vue'
+
+interface Category {
+  id: number
+  name: string
+}
+
+// State untuk kategori
+const categories = ref<Category[]>([])
+const showModal = ref(false)
+const editingCategory = ref<Category | null>(null)
+const form = reactive({
+  id: null as number | null,
+  name: '',
+})
+
+// Fungsi untuk mengambil data kategori dari local storage
+const fetchCategories = () => {
+  const storedCategories = localStorage.getItem('categories')
+  if (storedCategories) {
+    categories.value = JSON.parse(storedCategories)
+  }
+}
+
+// Fungsi untuk menyimpan data kategori ke local storage
+const saveCategories = () => {
+  localStorage.setItem('categories', JSON.stringify(categories.value))
+}
+
+// Mengambil data kategori dari local storage saat komponen dimount
+onMounted(fetchCategories)
+
+// Fungsi untuk menambah/mengedit kategori
+const saveCategory = () => {
+  if (editingCategory.value) {
+    // Update kategori
+    const index = categories.value.findIndex(cat => cat.id === form.id)
+    if (index !== -1) {
+      categories.value[index].name = form.name
+    }
+  } else {
+    // Tambah kategori baru
+    const newCategory: Category = {
+      id: Date.now(),
+      name: form.name,
+    }
+    categories.value.push(newCategory)
+  }
+
+  // Simpan ke local storage dan reset form
+  saveCategories()
+  resetForm()
+  showModal.value = false
+}
+
+// Fungsi untuk mengedit kategori
+const editCategory = (category: Category) => {
+  editingCategory.value = category
+  form.id = category.id
+  form.name = category.name
+  showModal.value = true
+}
+
+// Fungsi untuk menghapus kategori
+const deleteCategory = (id: number) => {
+  categories.value = categories.value.filter(category => category.id !== id)
+  saveCategories()
+}
+
+// Fungsi untuk mereset form
+const resetForm = () => {
+  editingCategory.value = null
+  form.id = null
+  form.name = ''
+}
+</script>
+
 <template>
-  <div class="container mx-auto p-4">
+  <div class="container mx-auto px-4 py-8">
+    <nav class="bg-gradient-to-r from-blue-500 to-indigo-600 p-6 rounded-lg shadow-lg flex justify-between items-center mb-8">
+      <div>
+        <h1 class="text-5xl text-white font-extrabold">myMoneii</h1>
+        <p class="text-white text-lg font-light italic">Save More for A Better Future</p>
+      </div>
+      <div class="flex items-center space-x-4">
+        <NuxtLink to="/" class="text-white hover:text-gray-300 text-lg transition duration-300">Dashboard</NuxtLink>
+        <NuxtLink to="/transactions" class="text-white hover:text-gray-300 text-lg transition duration-300">Transaksi</NuxtLink>
+        <NuxtLink to="/categories" class="text-white hover:text-gray-300 text-lg transition duration-300">Kategori</NuxtLink>
+      </div>
+    </nav>
+    <div class="container mx-auto p-4">
     <h1 class="text-2xl font-bold mb-4">Daftar Kategori</h1>
     <div class="mb-4">
       <button
@@ -93,93 +183,5 @@
       </div>
     </div>
   </div>
+  </div>
 </template>
-
-<script setup lang="ts">
-import { createClient } from '@supabase/supabase-js'
-import { ref, reactive, onMounted } from 'vue'
-
-const supabaseUrl = 'https://vchyvlqxpntytsnpqzli.supabase.co'
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjaHl2bHF4cG50eXRzbnBxemxpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTY3ODEwMTUsImV4cCI6MjAzMjM1NzAxNX0.rXzpPTWkPH2sPbAukMsMXWt5lXGkvBR1WfAd2sC-3j8'
-const supabase = createClient(supabaseUrl, supabaseKey)
-
-interface Category {
-  id: number
-  name: string
-}
-
-// State untuk kategori
-const categories = ref<Category[]>([])
-const showModal = ref(false)
-const editingCategory = ref<Category | null>(null)
-const form = reactive({
-  id: null as number | null,
-  name: '',
-})
-
-// Mengambil data kategori dari Supabase
-onMounted(async () => {
-  const { data: categoriesData, error } = await supabase.from('categories').select('*')
-  if (error) console.error(error)
-  if (categoriesData) categories.value = categoriesData as Category[]
-})
-
-// Fungsi untuk menambah/mengedit kategori
-const saveCategory = async () => {
-  if (editingCategory.value) {
-    // Update kategori
-    const { error } = await supabase
-      .from('categories')
-      .update({
-        name: form.name,
-      })
-      .eq('id', form.id!)
-    if (error) console.error(error)
-  } else {
-    // Tambah kategori baru
-    const { data, error } = await supabase
-      .from('categories')
-      .insert([
-        {
-          name: form.name,
-        },
-      ])
-    if (error) console.error(error)
-  }
-
-  // Reset form dan tutup modal
-  resetForm()
-  showModal.value = false
-
-  // Mengambil data kategori terbaru
-  const { data: categoriesData, error } = await supabase.from('categories').select('*')
-  if (error) console.error(error)
-  if (categoriesData) categories.value = categoriesData as Category[]
-}
-
-// Fungsi untuk mengedit kategori
-const editCategory = (category: Category) => {
-  editingCategory.value = category
-  form.id = category.id
-  form.name = category.name
-  showModal.value = true
-}
-
-// Fungsi untuk menghapus kategori
-const deleteCategory = async (id: number) => {
-  const { error: deleteError } = await supabase.from('categories').delete().eq('id', id)
-  if (deleteError) console.error(deleteError)
-
-  // Mengambil data kategori terbaru
-  const { data: categoriesData, error: fetchError } = await supabase.from('categories').select('*')
-  if (fetchError) console.error(fetchError)
-  if (categoriesData) categories.value = categoriesData as Category[]
-}
-
-// Fungsi untuk mereset form
-const resetForm = () => {
-  editingCategory.value = null
-  form.id = null
-  form.name = ''
-}
-</script>
