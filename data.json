@@ -1,0 +1,41 @@
+{
+    "categories": {
+      "pemasukan": ["Gaji", "Bonus", "Hadiah"],
+      "pengeluaran": ["Makanan", "Transportasi", "Belanja"]
+    },
+    "harian": [
+      {
+        "tanggal": "2024-05-01",
+        "pemasukan": {
+          "Gaji": 100,
+          "Bonus": 50
+        },
+        "pengeluaran": {
+          "Makanan": 20,
+          "Transportasi": 10
+        }
+      },
+      {
+        "tanggal": "2024-05-02",
+        "pemasukan": {
+          "Gaji": 100
+        },
+        "pengeluaran": {
+          "Makanan": 30,
+          "Transportasi": 15,
+          "Belanja": 50
+        }
+      },
+      {
+        "tanggal": "2024-05-03",
+        "pemasukan": {
+          "Gaji": 150
+        },
+        "pengeluaran": {
+          "Makanan": 25,
+          "Transportasi": 20
+        }
+      }
+    ]
+  }
+  
