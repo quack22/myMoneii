@@ -1,5 +1,17 @@
 <template>
-  <div class="container mx-auto p-4">
+  <div class="container mx-auto px-4 py-8">
+    <nav class="bg-gradient-to-r from-blue-500 to-indigo-600 p-6 rounded-lg shadow-lg flex justify-between items-center mb-8">
+      <div>
+        <h1 class="text-5xl text-white font-extrabold">myMoneii</h1>
+        <p class="text-white text-lg font-light italic">Save More for A Better Future</p>
+      </div>
+      <div class="flex items-center space-x-4">
+        <NuxtLink to="/" class="text-white hover:text-gray-300 text-lg transition duration-300">Dashboard</NuxtLink>
+        <NuxtLink to="/transactions" class="text-white hover:text-gray-300 text-lg transition duration-300">Transaksi</NuxtLink>
+        <NuxtLink to="/categories" class="text-white hover:text-gray-300 text-lg transition duration-300">Kategori</NuxtLink>
+      </div>
+    </nav>
+    <div class="container mx-auto p-4">
     <h1 class="text-2xl font-bold mb-4">Daftar Kategori</h1>
     <div class="mb-4">
       <button
@@ -92,6 +104,7 @@
         </div>
       </div>
     </div>
+  </div>
   </div>
 </template>
 
